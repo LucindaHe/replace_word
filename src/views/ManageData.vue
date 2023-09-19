@@ -16,7 +16,7 @@
         </tbody>
       </table>
 
-      <div class="horizontal_list">
+      <!-- <div class="horizontal_list">
         <input
           class="textSize"
           type="text"
@@ -30,7 +30,7 @@
           placeholder="輸入取代字"
         />
         <div @click="addData">新增</div>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
