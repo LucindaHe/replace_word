@@ -19,21 +19,6 @@
       <p v-if="textFound">文章中包含關鍵字</p>
       <p v-else>文章中不包含關鍵字。</p>
     </div>
-
-    <div class="container">
-      <div @click="addExcelFile">讀取excel</div>
-
-      <input class="file-upload-input" name="upload-file" type="file" />
-
-      <div class="file-upload-zone">
-        <a href="#" class="file-upload__btn">upload file</a>
-        <span class="file-upload__name"></span>
-        <div class="file-upload__text-container">
-          <p>drop files here</p>
-        </div>
-      </div>
-    </div>
-
     <router-view></router-view>
   </div>
 </template>
@@ -58,60 +43,6 @@ export default {
 
   mounted() {
     this.arrangeList();
-
-    const fileInput = document.querySelector(".file-upload-input");
-    const fileNameZone = document.querySelector(".file-upload__name");
-    const fileBtn = document.querySelector(".file-upload__btn");
-    const dropZone = document.querySelector(".file-upload-zone");
-
-    fileInput.addEventListener("change", function (e) {
-      console.log(e.target.files);
-      const fileName = e.target.files[0].name;
-      const idxDot = fileName.lastIndexOf(".") + 1;
-      const extFile = fileName.substr(idxDot, fileName.length).toLowerCase();
-      if (extFile === "xls" || extFile === "xlsx") {
-        fileNameZone.textContent = fileName;
-        this.InputFile = e.target.files[0];
-        console.log("InputFile", this.InputFile);
-      } else {
-        fileNameZone.textContent = "formatError";
-        this.InputFile = null;
-        console.log("InputFile", this.InputFile);
-      }
-    });
-
-    fileBtn.addEventListener("click", function () {
-      fileInput.click();
-    });
-
-    dropZone.addEventListener("drop", function (e) {
-      e.preventDefault();
-
-      const fileName = e.dataTransfer.files[0].name;
-      const idxDot = fileName.lastIndexOf(".") + 1;
-      const extFile = fileName.substr(idxDot, fileName.length).toLowerCase();
-      if (extFile === "xls" || extFile === "xlsx") {
-        fileNameZone.textContent = fileName;
-        this.InputFile = e.dataTransfer.files[0];
-        console.log("InputFile", this.InputFile);
-      } else {
-        fileNameZone.textContent = "formatError";
-        this.InputFile = null;
-        console.log("InputFile", this.InputFile);
-      }
-    });
-
-    dropZone.addEventListener("dragenter", function (e) {
-      e.preventDefault();
-    });
-
-    dropZone.addEventListener("dragover", function (e) {
-      e.preventDefault();
-    });
-
-    dropZone.addEventListener("dragleave", function (e) {
-      e.preventDefault();
-    });
   },
 
   methods: {
