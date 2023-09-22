@@ -19,6 +19,18 @@
       <p v-if="textFound">文章中包含關鍵字</p>
       <p v-else>文章中不包含關鍵字。</p>
     </div>
+
+    <div>
+      <div
+        class="drop-area"
+        @dragover.prevent
+        @dragenter.prevent
+        @drop="handleDrop"
+      >
+        Drop files here or click to select
+      </div>
+      <input type="file" ref="fileInput" @change="handleFileUpload" />
+    </div>
     <router-view></router-view>
   </div>
 </template>
@@ -46,6 +58,26 @@ export default {
   },
 
   methods: {
+    handleDrop(event) {
+      event.preventDefault();
+      const files = event.dataTransfer.files;
+      if (files.length > 0) {
+        this.$refs.fileInput.files = files;
+        this.handleFile(files[0]);
+      }
+    },
+    handleFileUpload() {
+      const files = this.$refs.fileInput.files;
+      if (files.length > 0) {
+        this.handleFile(files[0]);
+      }
+    },
+    handleFile(file) {
+      this.InputFile = file;
+      console.log("File selected:", file);
+      // Perform file handling logic here
+    },
+
     arrangeList() {
       this.dataList = Object.entries(this.replaceWords);
     },
@@ -166,5 +198,13 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.drop-area {
+  width: 300px;
+  height: 200px;
+  border: 2px dashed #ccc;
+  text-align: center;
+  padding: 20px;
 }
 </style>
