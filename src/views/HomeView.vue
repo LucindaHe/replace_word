@@ -50,6 +50,7 @@ export default {
       dataList: {},
       text_value: "",
       InputFile: null,
+      excelData: [],
     };
   },
 
@@ -76,6 +77,28 @@ export default {
       this.InputFile = file;
       console.log("File selected:", file);
       // Perform file handling logic here
+
+      this.ExcelToJson();
+    },
+
+    ExcelToJson() {
+      if (this.InputFile != null) {
+        const file = this.InputFile;
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: "array" });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          this.excelData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+          console.log("sheetName", sheetName);
+          console.log("worksheet", worksheet);
+        };
+
+        reader.readAsArrayBuffer(file);
+        console.log("ExcelToJson excelData", this.excelData);
+      }
     },
 
     arrangeList() {
@@ -99,19 +122,23 @@ export default {
     },
 
     checkText() {
-      let articleText_new = this.$refs.textArea.value;
-      this.text_value = this.$refs.textArea.value;
+      if (this.InputFile != null) {
+        this.ExcelToJson();
 
-      this.dataList.forEach((element) => {
-        if (this.text_value.includes(element[0])) {
-          articleText_new = this.text_value.replace(
-            new RegExp(element[0], "g"),
-            element[1]
-          );
-          this.text_value = articleText_new;
-          this.textFound = true;
-        }
-      });
+        let articleText_new = this.$refs.textArea.value;
+        this.text_value = this.$refs.textArea.value;
+
+        this.excelData.forEach((element) => {
+          if (this.text_value.includes(element[0])) {
+            articleText_new = this.text_value.replace(
+              new RegExp(element[0], "g"),
+              element[1]
+            );
+            this.text_value = articleText_new;
+            this.textFound = true;
+          }
+        });
+      }
     },
 
     addExcelFile() {

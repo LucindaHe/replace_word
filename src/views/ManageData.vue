@@ -9,34 +9,33 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="e in dataList" :key="e">
+          <tr v-for="e in excelData" :key="e">
             <td>{{ e[0] }}</td>
             <td>{{ e[1] }}</td>
           </tr>
         </tbody>
       </table>
 
-      <!-- <div class="horizontal_list">
-        <input
-          class="textSize"
-          type="text"
-          v-model="key"
-          placeholder="輸入被和諧字"
-        />
-        <input
-          class="textSize"
-          type="text"
-          v-model="value"
-          placeholder="輸入取代字"
-        />
-        <div @click="addData">新增</div>
-      </div> -->
+      <div @click="ExcelToJson">開始轉換</div>
+
+      <div>
+        <div
+          class="drop-area"
+          @dragover.prevent
+          @dragenter.prevent
+          @drop="handleDrop"
+        >
+          Drop files here or click to select
+        </div>
+        <input type="file" ref="fileInput" @change="handleFileUpload" />
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import replaceWords from "@/database/replaceWord.json";
+import * as XLSX from "xlsx"; // vue3可用此引入
 
 export default {
   name: "ManageData",
@@ -48,6 +47,7 @@ export default {
       dataList: {},
       key: "",
       value: "",
+      excelData: [],
     };
   },
 
@@ -56,6 +56,46 @@ export default {
   },
 
   methods: {
+    handleDrop(event) {
+      event.preventDefault();
+      const files = event.dataTransfer.files;
+      if (files.length > 0) {
+        this.$refs.fileInput.files = files;
+        this.handleFile(files[0]);
+      }
+    },
+    handleFileUpload() {
+      const files = this.$refs.fileInput.files;
+      if (files.length > 0) {
+        this.handleFile(files[0]);
+      }
+    },
+    handleFile(file) {
+      this.InputFile = file;
+      console.log("File selected:", file);
+      // Perform file handling logic here
+    },
+
+    ExcelToJson() {
+      if (this.InputFile != null) {
+        const file = this.InputFile;
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: "array" });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          this.excelData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+          console.log("sheetName", sheetName);
+          console.log("worksheet", worksheet);
+        };
+
+        reader.readAsArrayBuffer(file);
+        console.log("ExcelToJson excelData", this.excelData);
+      }
+    },
+
     arrangeList() {
       this.dataList = Object.entries(this.replaceWords);
     },
