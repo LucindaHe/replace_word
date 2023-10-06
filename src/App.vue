@@ -1,50 +1,9 @@
 <template>
   <div>
-    <TabView style="height: 1100px">
-      <TabPanel header="轉換和諧字">
-        <div>
-          <div>
-            <textarea
-              ref="textArea"
-              class="no-resize"
-              style="font-size: 20px"
-              v-model="text_value"
-              rows="40"
-              cols="150"
-              autoResize
-            />
-          </div>
-          <div class="btnGroup">
-            <div class="btn-pri" @click="checkText">開始轉換</div>
-            <div class="btn-pri" @click="copyText">複製文字</div>
-          </div>
-          <div>
-            <p v-if="textFound">文章中包含關鍵字</p>
-            <p v-else>文章中不包含關鍵字。</p>
-          </div>
-        </div>
-      </TabPanel>
-      <TabPanel header="管理資料庫">
-        <div class="ManageData scroll-container">
-          <div>
-            <table class="ManageData-bordered_table">
-              <thead>
-                <tr>
-                  <th>被和諧字</th>
-                  <th>取代字</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="e in excelData" :key="e">
-                  <td>{{ e[0] }}</td>
-                  <td>{{ e[1] }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </TabPanel>
-    </TabView>
+    <div class="btnGroup">
+      <button class="tab-pri" @click="activeTab = 'tab1'">轉換和諧字</button>
+      <button class="tab-pri" @click="activeTab = 'tab2'">管理資料庫</button>
+    </div>
 
     <div>
       <input
@@ -57,17 +16,74 @@
         @change="handleFileUpload"
       />
     </div>
+
+    <div class="tabContent" v-if="activeTab === 'tab1'">
+      <div>
+        <div>
+          <textarea
+            ref="textArea"
+            class="no-resize"
+            style="font-size: 20px"
+            v-model="text_value"
+            rows="40"
+            cols="150"
+            autoResize
+          />
+        </div>
+        <div class="btnGroup">
+          <button class="btn-pri" @click="checkText">開始轉換</button>
+          <button class="btn-pri" @click="copyText">複製文字</button>
+        </div>
+        <div>
+          <div class="scroll-container" v-if="textFound">
+            <div>
+              <table class="ManageData-bordered_table">
+                <thead>
+                  <tr>
+                    <th>被和諧字</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="e in replacedWord" :key="e">
+                    <td>{{ e }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <p v-else>文章中不包含關鍵字。</p>
+        </div>
+      </div>
+    </div>
+    <div class="tabContent" v-if="activeTab === 'tab2'">
+      <div class="scroll-container" v-if="excelData.length != 0">
+        <div>
+          <table class="ManageData-bordered_table">
+            <thead>
+              <tr>
+                <th>被和諧字</th>
+                <th>取代字</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="e in excelData" :key="e">
+                <td>{{ e[0] }}</td>
+                <td>{{ e[1] }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import * as XLSX from "xlsx"; // vue3可用此引入
-import TabView from "primevue/tabview";
-import TabPanel from "primevue/tabpanel";
 
 export default {
   name: "App",
-  components: { TabView, TabPanel },
+  components: {},
 
   data() {
     return {
@@ -75,9 +91,11 @@ export default {
       text_value: "",
       InputFile: null,
       excelData: [],
+      replacedWord: [],
       key: "",
       value: "",
       fileName: "",
+      activeTab: "tab1", // Initial active tab
     };
   },
 
@@ -104,9 +122,6 @@ export default {
 
     handleFile(file) {
       this.InputFile = file;
-      console.log("File selected:", file);
-      // Perform file handling logic here
-
       this.ExcelToJson();
     },
 
@@ -121,12 +136,9 @@ export default {
           const sheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[sheetName];
           this.excelData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-          console.log("sheetName", sheetName);
-          console.log("worksheet", worksheet);
         };
 
         reader.readAsArrayBuffer(file);
-        console.log("ExcelToJson excelData", this.excelData);
       }
     },
 
@@ -149,6 +161,8 @@ export default {
     checkText() {
       if (this.InputFile != null) {
         this.ExcelToJson();
+        this.replacedWord = [];
+        this.textFound = false;
 
         let articleText_new = this.$refs.textArea.value;
         this.text_value = this.$refs.textArea.value;
@@ -161,6 +175,7 @@ export default {
             );
             this.text_value = articleText_new;
             this.textFound = true;
+            this.replacedWord.push(element[0]);
           }
         });
       }
@@ -209,6 +224,14 @@ export default {
     height: 30px;
     margin-right: 10px;
   }
+  .tab-pri {
+    @extend %btn-default;
+    width: fit-content;
+    height: fit-content;
+    margin-right: 10px;
+    background-color: transparent;
+    color: #000000;
+  }
 }
 
 .no-resize {
@@ -221,13 +244,12 @@ export default {
   border: 2px dashed #ccc;
   text-align: center;
   padding: 20px;
+  margin-top: 10px;
 }
 
 .ManageData {
   &-bordered_table {
-    border-collapse: collapse; /* 合并边框 */
-    width: 100%; /* 表格宽度 */
-    border: 1px solid #ccc; /* 表格边框 */
+    width: 50%; /* 表格宽度 */
 
     th,
     td {
@@ -240,6 +262,10 @@ export default {
 .scroll-container {
   max-height: 1000px; /* 设置最大高度 */
   overflow-y: auto; /* 控制垂直滚动条 */
-  border: 1px solid #ccc; /* 可选：添加边框 */
+}
+
+.tabContent {
+  height: 1100px;
+  margin-top: 10px;
 }
 </style>
