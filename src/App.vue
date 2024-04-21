@@ -171,7 +171,7 @@ export default {
           if (this.text_value.includes(element[0])) {
             articleText_new = this.text_value.replace(
               new RegExp(element[0], "g"),
-              element[1]
+              " " + element[1]
             );
             this.text_value = articleText_new;
             this.textFound = true;
